@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}FlowSync — Operator Login{% endblock %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 80px auto;">
+    <div class="card">
+        <div class="card-title">🔐 Operator Login</div>
+        <p style="color: var(--text-secondary); font-size: 0.9em; margin-bottom: 20px;">
+            Traffic operators have access to EV tracking, signal control,
+            incident management, and the AI assistant.
+        </p>
+
+        {% if error %}
+        <div style="background: #3a1a1a; border: 1px solid var(--danger); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.9em; color: var(--danger);">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/login">
+            <div style="margin-bottom: 14px;">
+                <label style="display: block; margin-bottom: 6px; font-size: 0.85em; color: var(--text-secondary);">Username</label>
+                <input type="text" name="username" placeholder="operator" required autofocus>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 6px; font-size: 0.85em; color: var(--text-secondary);">Password</label>
+                <input type="password" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Log In</button>
+        </form>
+
+        <p style="text-align: center; margin-top: 20px; font-size: 0.8em;">
+            <a href="/" style="color: var(--text-secondary); text-decoration: none;">← Back to public dashboard</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

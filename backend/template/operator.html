@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+
+{% block title %}FlowSync — Operator Dashboard{% endblock %}
+
+{% block nav %}
+    <span class="role-badge role-operator">Operator</span>
+    <a href="/">Public View</a>
+    <a href="/logout">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="split-layout">
+    <!-- Left: Junctions + EV + Warnings -->
+    <div>
+        <!-- Junction Cards -->
+        <div class="card-title" style="margin-bottom: 12px;">JUNCTION STATUS</div>
+        <div class="junction-grid" id="junctionGrid">
+            {% for jid in ['J1', 'J2', 'J3'] %}
+            <div class="card junction-card" id="card-{{ jid }}">
+                <div class="junction-header">
+                    <span class="junction-id">{{ jid }}</span>
+                    <span class="mode-badge mode-adaptive" id="mode-{{ jid }}">Adaptive</span>
+                </div>
+                <div class="signal-display" id="signal-{{ jid }}">
+                    <div class="signal-light inactive" id="red-{{ jid }}"></div>
+                    <div class="signal-light inactive" id="yellow-{{ jid }}"></div>
+                    <div class="signal-light active-green" id="green-{{ jid }}"></div>
+                </div>
+                <div class="detail-row" style="margin-top: 12px;">
+                    <span class="detail-label">Phase</span>
+                    <span class="detail-value" id="phase-{{ jid }}">EW_GREEN</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Sensors</span>
+                    <span class="detail-value">
+                        <span class="status-dot status-green" id="sensor-{{ jid }}"></span>
+                        <span id="sensor-text-{{ jid }}">OK</span>
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">East Queue</span>
+                    <span class="detail-value" id="queue-east-{{ jid }}">0</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">West Queue</span>
+                    <span class="detail-value" id="queue-west-{{ jid }}">0</span>
+                </div>
+                <div class="queue-bar"><div class="queue-fill" id="qbar-{{ jid }}" style="width: 0%"></div></div>
+                <div class="detail-row" style="margin-top: 8px;">
+                    <span class="detail-label">Pre-clear</span>
+                    <span class="detail-value" id="preclear-{{ jid }}" style="color: var(--text-secondary)">Inactive</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- EV Tracking Panel -->
+        <div class="card" id="evPanel">
+            <div class="card-title">🚑 Emergency Vehicle Tracking</div>
+            <div id="evContent">
+                <p style="color: var(--text-secondary); font-size: 0.9em;">
+                    No active emergency vehicle.
+                </p>
+            </div>
+            <div class="ev-route" id="evRoute" style="display: none;">
+                <div class="ev-junction-dot" id="ev-dot-J1">J1</div>
+                <div class="ev-route-line" id="ev-line-J1"></div>
+                <div class="ev-junction-dot" id="ev-dot-J2">J2</div>
+                <div class="ev-route-line" id="ev-line-J2"></div>
+                <div class="ev-junction-dot" id="ev-dot-J3">J3</div>
+            </div>
+        </div>
+
+        <!-- Active Warnings -->
+        <div class="card">
+            <div class="card-title">⚠ Active Warnings</div>
+            <div id="warningsPanel">
+                <p style="color: var(--text-secondary); font-size: 0.9em;">No active warnings.</p>
+            </div>
+        </div>
+
+        <!-- Incident Report -->
+        <div class="card">
+            <div class="card-title">📋 Report Incident</div>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                <select id="incidentJunction" style="width: auto; min-width: 80px;">
+                    <option value="J1">J1</option>
+                    <option value="J2">J2</option>
+                    <option value="J3">J3</option>
+                </select>
+                <input type="text" id="incidentDesc" placeholder="Describe the incident..." style="flex: 1;">
+                <button class="btn btn-danger" onclick="reportIncident()">Report</button>
+            </div>
+        </div>
+
+        <!-- Audit Log (Collapsible) -->
+        <div class="card">
+            <div class="collapsible-header" onclick="toggleAudit()">
+                <span class="card-title" style="margin: 0;">📝 Audit Log</span>
+                <span id="auditToggle" style="color: var(--text-secondary);">▼</span>
+            </div>
+            <div class="collapsible-content collapsed" id="auditContent">
+                <table class="audit-table" style="margin-top: 12px;">
+                    <thead>
+                        <tr><th>Time</th><th>User</th><th>Action</th><th>Detail</th></tr>
+                    </thead>
+                    <tbody id="auditBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: LLM Chat -->
+    <div>
+        <div class="card" style="position: sticky; top: 24px;">
+            <div class="card-title">🤖 FlowSync AI Assistant</div>
+            <div class="chat-suggestions">
+                <span class="suggestion-chip" onclick="askLLM(this.textContent)">What's the status?</span>
+                <span class="suggestion-chip" onclick="askLLM(this.textContent)">Should I preempt J2?</span>
+                <span class="suggestion-chip" onclick="askLLM(this.textContent)">Incident at J1</span>
+                <span class="suggestion-chip" onclick="askLLM(this.textContent)">Where's the ambulance?</span>
+            </div>
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-bubble chat-ai">
+                        Hello! I'm the FlowSync AI assistant. Ask me about junction status,
+                        preemption decisions, or incident analysis. I use real sensor data
+                        and deterministic tools — I don't guess.
+                    </div>
+                </div>
+                <div class="chat-input-row">
+                    <input type="text" id="chatInput" placeholder="Ask the AI..."
+                           onkeypress="if(event.key==='Enter') sendChat()">
+                    <button class="btn btn-primary" onclick="sendChat()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ─── SSE Connection ───────────────────────────────────
+let evtSource = null;
+let reconnectDelay = 1000;
+
+function connectSSE() {
+    evtSource = new EventSource('/api/stream/op');
+
+    evtSource.onopen = function() {
+        document.getElementById('connDot').className = 'status-dot status-green';
+        document.getElementById('connText').textContent = 'Connected';
+        reconnectDelay = 1000;
+    };
+
+    evtSource.onerror = function() {
+        document.getElementById('connDot').className = 'status-dot status-red';
+        document.getElementById('connText').textContent = 'Reconnecting...';
+        evtSource.close();
+        setTimeout(connectSSE, Math.min(reconnectDelay, 10000));
+        reconnectDelay *= 2;
+    };
+
+    evtSource.addEventListener('init', function(e) {
+        const data = JSON.parse(e.data);
+        if (data.junctions) updateAllJunctions(data.junctions);
+        if (data.warnings) updateAllWarnings(data.warnings);
+        if (data.ev) updateEV(data.ev);
+    });
+
+    evtSource.addEventListener('status_update', function(e) {
+        updateJunction(JSON.parse(e.data));
+    });
+
+    evtSource.addEventListener('queue_update', function(e) {
+        const d = JSON.parse(e.data);
+        updateQueues(d.junction_id, d.queues, d.sensor_ok);
+    });
+
+    evtSource.addEventListener('warning_update', function(e) {
+        updateWarning(JSON.parse(e.data));
+    });
+
+    evtSource.addEventListener('ev_update', function(e) {
+        updateEV(JSON.parse(e.data));
+    });
+
+    evtSource.addEventListener('preclear_update', function(e) {
+        const d = JSON.parse(e.data);
+        updatePreclear(d.active_junctions || []);
+    });
+}
+
+// ─── Junction Updates ─────────────────────────────────
+function updateAllJunctions(junctions) {
+    for (const [jid, data] of Object.entries(junctions)) {
+        updateJunction({junction_id: jid, ...data});
+    }
+}
+
+function updateJunction(data) {
+    const jid = data.junction_id;
+    if (!jid) return;
+
+    // Phase
+    const phaseEl = document.getElementById('phase-' + jid);
+    if (phaseEl) phaseEl.textContent = data.phase || 'Unknown';
+
+    // Signal lights
+    const phase = data.phase || '';
+    setSignalLights(jid, phase);
+
+    // Mode
+    const modeBadge = document.getElementById('mode-' + jid);
+    if (modeBadge) {
+        const mode = data.mode || 'adaptive';
+        modeBadge.textContent = mode === 'adaptive' ? 'Adaptive' : '⚠ Fallback';
+        modeBadge.className = 'mode-badge ' + (mode === 'adaptive' ? 'mode-adaptive' : 'mode-fallback');
+    }
+
+    // Sensors
+    const sensorDot = document.getElementById('sensor-' + jid);
+    const sensorText = document.getElementById('sensor-text-' + jid);
+    if (sensorDot) {
+        const ok = data.sensor_ok !== false;
+        sensorDot.className = 'status-dot ' + (ok ? 'status-green' : 'status-red');
+        if (sensorText) sensorText.textContent = ok ? 'OK' : 'FAULT';
+    }
+
+    // Queues
+    if (data.queues) updateQueues(jid, data.queues, data.sensor_ok);
+}
+
+function setSignalLights(jid, phase) {
+    const red = document.getElementById('red-' + jid);
+    const yellow = document.getElementById('yellow-' + jid);
+    const green = document.getElementById('green-' + jid);
+    if (!red || !yellow || !green) return;
+
+    red.className = 'signal-light inactive';
+    yellow.className = 'signal-light inactive';
+    green.className = 'signal-light inactive';
+
+    if (phase.includes('GREEN')) green.className = 'signal-light active-green';
+    else if (phase.includes('YELLOW')) yellow.className = 'signal-light active-yellow';
+    else red.className = 'signal-light active-red';
+}
+
+function updateQueues(jid, queues, sensorOk) {
+    const eastEl = document.getElementById('queue-east-' + jid);
+    const westEl = document.getElementById('queue-west-' + jid);
+    if (eastEl) eastEl.textContent = queues.east || 0;
+    if (westEl) westEl.textContent = queues.west || 0;
+
+    const bar = document.getElementById('qbar-' + jid);
+    if (bar) {
+        const total = (queues.east || 0) + (queues.west || 0);
+        bar.style.width = Math.min(total * 25, 100) + '%';
+        bar.style.background = total > 3 ? 'var(--warning)' : 'var(--accent)';
+    }
+}
+
+function updatePreclear(activeJunctions) {
+    for (const jid of ['J1', 'J2', 'J3']) {
+        const el = document.getElementById('preclear-' + jid);
+        if (el) {
+            if (activeJunctions.includes(jid)) {
+                el.textContent = '🟢 Active';
+                el.style.color = 'var(--accent)';
+            } else {
+                el.textContent = 'Inactive';
+                el.style.color = 'var(--text-secondary)';
+            }
+        }
+    }
+}
+
+// ─── EV Tracking ──────────────────────────────────────
+function updateEV(ev) {
+    const content = document.getElementById('evContent');
+    const route = document.getElementById('evRoute');
+
+    if (!ev || !ev.active) {
+        content.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.9em;">No active emergency vehicle.</p>';
+        route.style.display = 'none';
+        return;
+    }
+
+    route.style.display = 'flex';
+
+    const etaStr = ev.etas
+        ? Object.entries(ev.etas).map(([k,v]) => k + ': ' + v + 's').join(' · ')
+        : 'calculating...';
+
+    content.innerHTML = `
+        <div class="detail-row">
+            <span class="detail-label">Position</span>
+            <span class="detail-value">Near ${ev.nearest || '?'}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Speed</span>
+            <span class="detail-value">${ev.speed_kmh || 0} km/h</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">ETAs</span>
+            <span class="detail-value" style="font-size: 0.85em">${etaStr}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Last seen</span>
+            <span class="detail-value">${ev.last_seen_ago != null ? ev.last_seen_ago + 's ago' : 'N/A'}</span>
+        </div>
+    `;
+
+    // Update route visualization
+    for (const jid of ['J1', 'J2', 'J3']) {
+        const dot = document.getElementById('ev-dot-' + jid);
+        if (dot) {
+            dot.className = 'ev-junction-dot';
+            if (jid === ev.nearest) dot.classList.add('current');
+        }
+    }
+}
+
+// ─── Warnings ─────────────────────────────────────────
+let activeWarnings = {};
+
+function updateAllWarnings(warnings) {
+    activeWarnings = {};
+    (warnings || []).forEach(w => { if (w.active) activeWarnings[w.junction_id] = w; });
+    renderWarnings();
+}
+
+function updateWarning(data) {
+    if (data.active) activeWarnings[data.junction_id] = data;
+    else delete activeWarnings[data.junction_id];
+    renderWarnings();
+}
+
+function renderWarnings() {
+    const panel = document.getElementById('warningsPanel');
+    const keys = Object.keys(activeWarnings);
+
+    if (keys.length === 0) {
+        panel.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.9em;">No active warnings.</p>';
+        return;
+    }
+
+    panel.innerHTML = keys.map(jid => {
+        const w = activeWarnings[jid];
+        return `<div class="warning-card">
+            <span class="warning-icon">🚨</span>
+            <span class="warning-text">${w.message}</span>
+            <div class="warning-meta">Junction ${jid} · ${w.approach || '?'} approach${w.eta ? ' · ETA ~' + w.eta + 's' : ''}</div>
+        </div>`;
+    }).join('');
+}
+
+// ─── LLM Chat ─────────────────────────────────────────
+function askLLM(text) {
+    document.getElementById('chatInput').value = text;
+    sendChat();
+}
+
+async function sendChat() {
+    const input = document.getElementById('chatInput');
+    const question = input.value.trim();
+    if (!question) return;
+    input.value = '';
+
+    const messages = document.getElementById('chatMessages');
+    messages.innerHTML += `<div class="chat-bubble chat-user">${escapeHtml(question)}</div>`;
+    messages.innerHTML += `<div class="chat-bubble chat-ai" id="thinking" style="opacity:0.6">Thinking...</div>`;
+    messages.scrollTop = messages.scrollHeight;
+
+    try {
+        const res = await fetch('/api/llm/ask', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({question}),
+        });
+        const data = await res.json();
+
+        document.getElementById('thinking')?.remove();
+
+        let toolHtml = '';
+        if (data.tool_calls && data.tool_calls.length > 0) {
+            toolHtml = '<div class="chat-tools">Tools used:<br>' +
+                data.tool_calls.map(tc =>
+                    `<div class="chat-tool-call">${tc.tool}(${JSON.stringify(tc.args)})</div>`
+                ).join('') + '</div>';
+        }
+
+        // Simple markdown-ish rendering
+        let responseHtml = (data.response || data.error || 'No response')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n/g, '<br>');
+
+        messages.innerHTML += `<div class="chat-bubble chat-ai">${responseHtml}${toolHtml}</div>`;
+    } catch (err) {
+        document.getElementById('thinking')?.remove();
+        messages.innerHTML += `<div class="chat-bubble chat-ai" style="border-color: var(--danger)">Error: ${err.message}</div>`;
+    }
+
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// ─── Incident Report ──────────────────────────────────
+async function reportIncident() {
+    const jid = document.getElementById('incidentJunction').value;
+    const desc = document.getElementById('incidentDesc').value.trim();
+    if (!desc) return alert('Please describe the incident.');
+
+    const res = await fetch('/api/incident', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({junction_id: jid, description: desc}),
+    });
+    const data = await res.json();
+    document.getElementById('incidentDesc').value = '';
+    alert(data.error || 'Incident reported at ' + jid);
+}
+
+// ─── Audit Log ────────────────────────────────────────
+let auditOpen = false;
+
+async function toggleAudit() {
+    const content = document.getElementById('auditContent');
+    const toggle = document.getElementById('auditToggle');
+    auditOpen = !auditOpen;
+
+    if (auditOpen) {
+        content.classList.remove('collapsed');
+        content.style.maxHeight = '400px';
+        toggle.textContent = '▲';
+        await refreshAudit();
+    } else {
+        content.classList.add('collapsed');
+        content.style.maxHeight = '0';
+        toggle.textContent = '▼';
+    }
+}
+
+async function refreshAudit() {
+    try {
+        const res = await fetch('/api/audit');
+        const entries = await res.json();
+        const tbody = document.getElementById('auditBody');
+        tbody.innerHTML = entries.reverse().slice(0, 20).map(e =>
+            `<tr><td>${e.timestamp}</td><td>${e.user}</td><td>${e.action}</td><td>${(e.detail || '').substring(0, 60)}</td></tr>`
+        ).join('');
+    } catch (err) {
+        console.error('Audit fetch error:', err);
+    }
+}
+
+// ─── Start ────────────────────────────────────────────
+connectSSE();
+// Refresh audit log periodically when open
+setInterval(() => { if (auditOpen) refreshAudit(); }, 5000);
+</script>
+{% endblock %}
