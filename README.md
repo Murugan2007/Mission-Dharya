@@ -87,13 +87,13 @@ To build this physical prototype on a tabletop road mat (~60 × 40 cm), you will
 | **Props** | **Toy Cars & Ambulance (Hot Wheels)**| 8–10 | Queued vehicles and emergency vehicle |
 | | **Road Mat / Foam Board** | 1 | 3-intersection corridor (~60 × 40 cm) |
 
-> 💡 **Pro-Tip**: If available, use pre-assembled **Traffic Light LED Modules** (the little 3-pin Red/Yellow/Green sticks with built-in resistors). They save 24 loose resistors and make breadboard wiring clean and sturdy.
+>  **Pro-Tip**: If available, use pre-assembled **Traffic Light LED Modules** (the little 3-pin Red/Yellow/Green sticks with built-in resistors). They save 24 loose resistors and make breadboard wiring clean and sturdy.
 
 ---
 
-## ⚡ Hardware Pinout & Wiring
+##  Hardware Pinout & Wiring
 
-> ⚠️ **CRITICAL VOLTAGE RULE**: Both the Arduino UNO Q headers and the ESP32 GPIOs operate at **3.3V logic**. Never feed 5V signals directly into GPIO inputs. Always put a **330Ω resistor** in series with each LED anode (+ long leg).
+>  **CRITICAL VOLTAGE RULE**: Both the Arduino UNO Q headers and the ESP32 GPIOs operate at **3.3V logic**. Never feed 5V signals directly into GPIO inputs. Always put a **330Ω resistor** in series with each LED anode (+ long leg).
 
 ### Junction 1 — Arduino UNO Q (Top Header Pins)
 The STM32U585 MCU directly controls these pins:
