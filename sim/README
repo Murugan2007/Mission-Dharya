@@ -1,0 +1,69 @@
+# FlowSync Urban Mobility Simulation (SUMO + TraCI)
+
+This directory contains the professional macroscopic/microscopic simulation benchmark for the **FlowSync** project.
+
+It provides statistical evidence that **Pre-Clearing Preemption (Upgrade #1)** outperforms both naive preemption and fixed signal timing by flushing queues downstream *before* an emergency vehicle arrives, without unnecessarily starving cross traffic.
+
+---
+
+## 1. Quick Start
+
+### Prerequisites
+1. **SUMO (Simulation of Urban Mobility)**:
+   - Windows: `winget install Eclipse.SUMO` or download installer from [https://eclipse.dev/sumo/](https://eclipse.dev/sumo/)
+   - Default install location: `C:\Program Files (x86)\Eclipse\Sumo`
+   - Set environment variable `SUMO_HOME` to this directory, and add `%SUMO_HOME%\bin` to your `Path`.
+2. **Python dependencies**:
+   ```bash
+   pip install traci sumolib matplotlib numpy
+   ```
+
+### Compile Road Network
+Double-click `build_network.bat` or run:
+```bash
+netconvert --node-files=corridor.nod.xml --edge-files=corridor.edg.xml --output-file=corridor.net.xml --tls.guess true
+```
+
+### Run Multi-Scenario Benchmark (5 runs per mode)
+```bash
+python run_comparison.py
+```
+This runs 20 simulation iterations (~90 seconds total) comparing:
+- `1_fixed`: Fixed-time controller (default signal cycle)
+- `2_adaptive`: Queue-actuated green extensions
+- `3_plain_preempt`: Immediate green upon EV proximity (<200m)
+- `4_preclear`: FlowSync ETA-based proactive queue pre-clearing
+
+### Generate Charts for Slides & Demo
+```bash
+python plot_results.py
+```
+Outputs high-res publication figures in `results/`:
+- `01_ev_travel_time.png`
+- `02_traffic_delay.png`
+- `03_queue_dynamics_j2.png`
+- `04_combined_tradeoff.png`
+
+---
+
+## 2. File Overview
+
+| File | Purpose |
+|---|---|
+| `corridor.nod.xml` | Spatial layout of the 3 signalized junctions (J1, J2, J3) & cross streets |
+| `corridor.edg.xml` | 2-lane dual carriageway specs (50 km/h) & cross streets (40 km/h) |
+| `corridor.rou.xml` | Background passenger flows + emergency vehicle with blue light device |
+| `corridor.sumocfg` | Master simulation config with lateral sub-lane rescue model enabled |
+| `run_comparison.py`| Automated TraCI benchmark script with statistical aggregation |
+| `plot_results.py`  | Generates dark-theme graphs matching the FlowSync web dashboard |
+| `results/`         | CSV data tables and rendered PNG charts |
+
+---
+
+## 3. How to Present During the Demo
+1. **Show the hardware on the table** (UNO Q LEDs + ESP32s + toy road mat).
+2. **Explain the built vs simulated boundary**:
+   - Built: MCU hardware safety rules, LED signals, IR sensors, web UI, LLM tool orchestration, MQTT network.
+   - Simulated: High-volume city traffic dynamics and statistical metrics via SUMO.
+3. **Present Chart #4 (`04_combined_tradeoff.png`)**:
+   > *"Plain preemption speeds up the ambulance by 34%, but spikes cross-traffic delay. Our FlowSync Pre-Clearing logic achieves faster ambulance arrival while keeping general vehicle delay near baseline levels."*
