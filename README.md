@@ -1,14 +1,14 @@
-# 🚦 FlowSync: AI-Powered City Traffic Intelligence & Coordination
+# Mission Dharya -> FlowSync: AI-Powered City Traffic Intelligence & Coordination
 
-> **A connected, multi-intersection traffic management prototype that flushes congestion ahead of emergency vehicles before they arrive — with hardware-enforced safety and driver privacy by design.**
+> **A connected, multi-intersection traffic management prototype that flushes congestion ahead of emergency vehicles before they arrive with hardware-enforced safety and driver privacy by design.**
 
 Built for **Problem Statement 3 (Hardware Domain)**.
 
 ---
 
-## 💡 The Problem Nobody Talks About
+##  The Problem Nobody Talks About
 
-Standard Emergency Vehicle Preemption (EVP) systems — from basic optical sensors to modern GPS cloud triggers — suffer from a glaring physical reality:
+Standard Emergency Vehicle Preemption (EVP) systems from basic optical sensors to modern GPS cloud triggers suffer from a glaring physical reality:
 
 > **Turning a traffic light green is completely useless if 8 cars are stopped in front of the ambulance with nowhere to go.**
 
@@ -21,7 +21,7 @@ When emergency vehicles approach an intersection during peak congestion, cross-t
 
 ---
 
-## 🏛️ System Architecture
+##  System Architecture
 
 FlowSync uses a dual-layer architecture separating **high-level advisory AI** from **real-time deterministic hardware control**:
 
@@ -67,7 +67,7 @@ FlowSync uses a dual-layer architecture separating **high-level advisory AI** fr
 
 ---
 
-## 📦 Bill of Materials (BOM)
+##  Bill of Materials (BOM)
 
 To build this physical prototype on a tabletop road mat (~60 × 40 cm), you will need:
 
@@ -134,7 +134,7 @@ Buttons connect between the designated GPIO pin and **GND** (utilizing internal 
 
 ---
 
-## 🛠️ Step-by-Step Recreation Guide
+##  Step-by-Step Recreation Guide
 
 ```
 flowsync/
@@ -221,27 +221,27 @@ To generate macroscopic statistical validation comparing FlowSync against city b
 
 ---
 
-## 📊 Built vs. Simulated Boundary
+## Built vs. Simulated Boundary
 
 To maintain complete scientific and academic honesty during hackathon demonstrations, the system's capabilities are explicitly demarcated:
 
 | Feature | Physically Built (On Table) | Macroscopically Simulated (In SUMO) |
 |---|:---:|:---:|
-| **Signal Phase Timing & Cycles** | ✅ Real STM32 & ESP32 LEDs | |
-| **Deterministic Safety (Min Green / All-Red)**| ✅ Enforced in MCU C++ firmware | |
-| **Watchdog Reversion to Fixed Cycles** | ✅ Tested via sensor disconnect | |
-| **Queue Detection** | ✅ Real IR sensors + USB Webcam | |
-| **Mesh Networking & Messaging** | ✅ Mosquitto MQTT over local Wi-Fi | |
-| **Role-Based Web Dashboards** | ✅ Live Flask UI with SSE streams | |
-| **LLM Reasoning & Tool Orchestration** | ✅ Gemini 2.0 API + `what_if` tool | |
-| **Privacy Token Rotation** | ✅ 30s rotating tokens on ESP32 | |
+| **Signal Phase Timing & Cycles** |  Real STM32 & ESP32 LEDs | |
+| **Deterministic Safety (Min Green / All-Red)**| Enforced in MCU C++ firmware | |
+| **Watchdog Reversion to Fixed Cycles** |  Tested via sensor disconnect | |
+| **Queue Detection** |  Real IR sensors + USB Webcam | |
+| **Mesh Networking & Messaging** |  Mosquitto MQTT over local Wi-Fi | |
+| **Role-Based Web Dashboards** |  Live Flask UI with SSE streams | |
+| **LLM Reasoning & Tool Orchestration** |  Gemini 2.0 API + `what_if` tool | |
+| **Privacy Token Rotation** |  30s rotating tokens on ESP32 | |
 | **Vehicle Trajectories** | Button-driven position beacons | High-speed continuous GPS kinematics |
 | **Corridor Scale** | 3 tabletop intersections | Multi-kilometer 2-lane dual carriageway |
 | **Statistical Generalization** | 5 physical test runs | 20 runs across randomized random traffic seeds |
 
 ---
 
-## 🎬 The 5-Minute Stage Demo Walkthrough
+##  The 5-Minute Stage Demo Walkthrough
 
 | Time | Action | What to Point Out |
 |---|---|---|
@@ -254,7 +254,7 @@ To maintain complete scientific and academic honesty during hackathon demonstrat
 
 ---
 
-## 🛡️ Safety & Privacy Compliance Checklist
+##  Safety & Privacy Compliance Checklist
 
 - [x] **No Unlawful Driving Directives**: System warnings strictly advise drivers to *"make way when safe and lawful"*. It never instructs vehicles to run red lights or violate traffic rules.
 - [x] **"Don't Follow the Ambulance"**: Driver advisories explicitly include anti-tailgating reminders based on empirical collision studies.
@@ -263,6 +263,6 @@ To maintain complete scientific and academic honesty during hackathon demonstrat
 
 ---
 
-## 📜 License & Credits
+##  License & Credits
 
 Developed for the **AI-Powered City Traffic Intelligence & Coordination (PS 3)** challenge. Released under the [MIT License](LICENSE).
