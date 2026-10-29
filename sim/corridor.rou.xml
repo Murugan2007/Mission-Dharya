@@ -1,0 +1,39 @@
+<routes>
+    <!-- Vehicle types -->
+    <vType id="car" accel="2.6" decel="4.5" length="5.0"
+           minGap="2.5" maxSpeed="50" sigma="0.5" guiShape="passenger"/>
+
+    <vType id="ambulance" vClass="emergency" accel="3.5" decel="4.5"
+           length="6.5" minGap="2.5" maxSpeed="70" guiShape="emergency"
+           color="1,0,0">
+        <param key="has.bluelight.device" value="true"/>
+    </vType>
+
+    <!-- Routes -->
+    <route id="WE" edges="W_J1 J1_J2 J2_J3 J3_E"/>
+    <route id="EW" edges="E_J3 J3_J2 J2_J1 J1_W"/>
+    <route id="NS1" edges="N1_J1 J1_S1"/>
+    <route id="SN1" edges="S1_J1 J1_N1"/>
+    <route id="NS2" edges="N2_J2 J2_S2"/>
+    <route id="SN2" edges="S2_J2 J2_N2"/>
+    <route id="NS3" edges="N3_J3 J3_S3"/>
+    <route id="SN3" edges="S3_J3 J3_N3"/>
+
+    <!-- Main corridor traffic -->
+    <flow id="flow_WE" type="car" route="WE" begin="0" end="600"
+          probability="0.20" departLane="best" departSpeed="max"/>
+    <flow id="flow_EW" type="car" route="EW" begin="0" end="600"
+          probability="0.15" departLane="best" departSpeed="max"/>
+
+    <!-- Cross traffic -->
+    <flow id="flow_NS1" type="car" route="NS1" begin="0" end="600" probability="0.08"/>
+    <flow id="flow_SN1" type="car" route="SN1" begin="0" end="600" probability="0.06"/>
+    <flow id="flow_NS2" type="car" route="NS2" begin="0" end="600" probability="0.08"/>
+    <flow id="flow_SN2" type="car" route="SN2" begin="0" end="600" probability="0.06"/>
+    <flow id="flow_NS3" type="car" route="NS3" begin="0" end="600" probability="0.08"/>
+    <flow id="flow_SN3" type="car" route="SN3" begin="0" end="600" probability="0.06"/>
+
+    <!-- Ambulance enters at t=100s heading east -->
+    <vehicle id="ambulance_01" type="ambulance" route="WE" depart="100"
+             departLane="best" departSpeed="max"/>
+</routes>

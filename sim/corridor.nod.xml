@@ -1,0 +1,16 @@
+<nodes>
+    <!-- Main corridor: west to east, 300m between junctions -->
+    <node id="W"  x="0"    y="0"   type="priority"/>
+    <node id="J1" x="300"  y="0"   type="traffic_light"/>
+    <node id="J2" x="600"  y="0"   type="traffic_light"/>
+    <node id="J3" x="900"  y="0"   type="traffic_light"/>
+    <node id="E"  x="1200" y="0"   type="priority"/>
+
+    <!-- Cross-street endpoints (200m from each junction) -->
+    <node id="N1" x="300"  y="200"  type="priority"/>
+    <node id="S1" x="300"  y="-200" type="priority"/>
+    <node id="N2" x="600"  y="200"  type="priority"/>
+    <node id="S2" x="600"  y="-200" type="priority"/>
+    <node id="N3" x="900"  y="200"  type="priority"/>
+    <node id="S3" x="900"  y="-200" type="priority"/>
+</nodes>

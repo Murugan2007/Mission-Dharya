@@ -1,0 +1,21 @@
+<configuration>
+    <input>
+        <net-file value="corridor.net.xml"/>
+        <route-files value="corridor.rou.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+        <end value="600"/>
+    </time>
+    <processing>
+        <lateral-resolution value="3.2"/>
+        <collision.action value="warn"/>
+    </processing>
+    <output>
+        <tripinfo-output value="results/tripinfo.xml"/>
+        <statistic-output value="results/stats.xml"/>
+    </output>
+    <report>
+        <no-step-log value="true"/>
+    </report>
+</configuration>
